@@ -6,8 +6,12 @@
 - [ ] Start Button
 
 ## InGame
-- [ ] Painting the HUD
-- [ ] Level (Ground)
+- [ ] Hud
+  - [X] design
+  - [ ] logic
+- [ ] Mission draw
+  - [ ] **terrain**
+  - [ ] creepers
 
 ## Summary
 - [ ] graph for how the game went
