@@ -6,6 +6,7 @@
 - [ ] Start Button
 
 ## InGame
+- [ ] Painting the HUD
 - [ ] Level (Ground)
 
 ## Summary

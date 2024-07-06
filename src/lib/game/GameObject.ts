@@ -1,9 +1,9 @@
 import type { Point } from "pixi.js";
 
-class GameObject {
-    // public coordinates: Point;
+export class GameObject {
+    public coordinates: Point;
 
-    constructor() {
-        
+    constructor(cord: Point) {
+        this.coordinates = cord;
     }
 }
