@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Application, Container, Graphics, Loader } from 'pixi.js';
+	import { Application, Assets, Container, Graphics, Loader, Sprite } from 'pixi.js';
 	import { onDestroy, onMount } from 'svelte';
 	import Hud from './Hud.svelte';
+	import { World } from '$lib/game/World';
 
 	let container: HTMLDivElement;
 	let elementCanvas: HTMLCanvasElement;
@@ -15,15 +16,41 @@
 		await app.init({
 			view: elementCanvas,
 			resizeTo: container,
-			backgroundColor: '#ccc'
+			backgroundColor: '#b4a69d'
 		});
+		await preoad();
 
-		if (app === null) return;
+		// create the world
+		let world = new World();
+		await addMap(world);
+
+		await addStructures(world);
+
+		// let mapContainer = new Container();
+
+		// app.stage.addChild(mapContainer);
 	});
 
-	onDestroy(() => {
-		if (app !== undefined) app.stop;
-	});
+	async function addStructures(world: World) {
+		world.structures.forEach((struct) => {
+			const sprite = Sprite.from(struct.getName());
+			sprite.x = struct.coordinates.x;
+			sprite.y = struct.coordinates.y;
+
+			app.stage.addChild(sprite);
+		})
+	}
+
+	async function addMap(world: World) {
+		console.log();
+	}
+
+	async function preoad() {
+		// const assets = [{ alias: 'background', src: 'background.jpg' }];
+		const assets = [{ alias: 'collector', src: 'collector.png' }];
+
+		await Assets.load(assets);
+	}
 </script>
 
 <div class="flex flex-col w-full h-screen">

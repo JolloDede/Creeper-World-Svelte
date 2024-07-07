@@ -10,8 +10,9 @@
   - [X] design
   - [ ] logic
 - [ ] Mission draw
-  - [ ] **terrain**
+  - [ ] terrain
   - [ ] creepers
+  - [X] Collectors
 
 ## Summary
 - [ ] graph for how the game went

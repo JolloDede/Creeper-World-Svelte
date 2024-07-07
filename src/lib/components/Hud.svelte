@@ -7,7 +7,7 @@
 	<!-- Buildings -->
 	<div class="w-1/2">
 		<div class="grid grid-cols-5">
-			<button class="p-1 bg-green-600">Collector</button>
+			<button class="flex p-1 bg-green-600"><img src="collector.png" alt="Collector" class="my-auto w-4 h-4">Collector</button>
 		</div>
 		<div class="grid grid-cols-5">
 			<button class="p-1 bg-red-600">Blaster</button>
