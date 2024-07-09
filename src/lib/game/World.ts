@@ -4,6 +4,11 @@ import type { Creeper } from "./Creeper";
 import type { GameObject } from "./GameObject";
 import { loadTerrain } from "./Map";
 
+export enum Structure {
+    Collector,
+    Blaster
+}
+
 export class World {
     public width = 72;
     public height = 48;
