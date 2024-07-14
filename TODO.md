@@ -10,7 +10,9 @@
   - [X] design
   - [ ] logic
 - [ ] Mission draw
-  - [ ] terrain
+  - [ ] terrain **(Doing)**
+    - [X] Slopes
+    - [ ] heights (coloring)
   - [ ] creepers
   - [X] Collectors
 - [ ] dragging and placing structures

@@ -50,13 +50,13 @@ export function loadTerrain(): number[][] {
     [3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ];
 
-    terain.toString = function(): string {
+    terain.toString = function (): string {
         let lines = [];
         for (let i = 1; i < 48; i++) {
-            lines.push("["+this[i].join(", ")+"]");
+            lines.push("[" + this[i].join(", ") + "]");
         }
-        return "["+lines.join(",\n")+"\n];";
+        return "[" + lines.join(",\n") + "\n];";
     }
- 
+
     return terain;
 }

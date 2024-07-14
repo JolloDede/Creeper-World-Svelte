@@ -10,8 +10,8 @@ export enum Structure {
 }
 
 export class World {
-    public width = 72;
-    public height = 48;
+    public width: number;
+    public height: number;
     public creepers: Creeper[];
     public structures: GameObject[];
     public map: number[][];
@@ -19,6 +19,8 @@ export class World {
     constructor() {
         this.creepers = [];
         this.map = loadTerrain();
+        this.width = this.map[0].length;
+        this.height = this.map.length;
         this.structures = this.initStructures();
     }
 

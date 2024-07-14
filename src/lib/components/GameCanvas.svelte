@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Application, Assets, Container, Graphics, Loader, Sprite } from 'pixi.js';
+	import { Application, Assets, Container, Graphics, Loader, Sprite, Text } from 'pixi.js';
 	import { onDestroy, onMount } from 'svelte';
 	import Hud from './Hud.svelte';
 	import { Structure, World } from '$lib/game/World';
+	import { text } from '@sveltejs/kit';
 
 	let container: HTMLDivElement;
 	let elementCanvas: HTMLCanvasElement;
@@ -10,28 +11,33 @@
 
 	let app: Application;
 	let levelContainer: Container;
+	let tileSize: number;
 	let draggingStructure: Sprite;
+	let world: World;
 
 	onMount(async () => {
 		app = new Application();
 		await app.init({
-			view: elementCanvas,
+			canvas: elementCanvas,
 			resizeTo: container,
-			backgroundColor: '#b4a69d'
+			// backgroundColor: '#b4a69d'
+			backgroundColor: 'black'
 		});
 		await preoad();
 
 		// create the world
-		let world = new World();
-		await addMap(world);
+		world = new World();
+		tileSize = CalcTileSize();
+		await initLevelContainer();
+		await addWorld();
 
-		await addStructures(world);
+		// await addStructures(world);
 
-		app.stage.hitArea = app.screen;
-		app.stage.eventMode = 'static';
-		app.stage.on('pointermove', (event) => {
-			if (draggingStructure) draggingStructure.position.copyFrom(event.global);
-		});
+		// app.stage.hitArea = app.screen;
+		// app.stage.eventMode = 'static';
+		// app.stage.on('pointermove', (event) => {
+		// 	if (draggingStructure) draggingStructure.position.copyFrom(event.global);
+		// });
 
 		// let mapContainer = new Container();
 
@@ -50,8 +56,307 @@
 		});
 	}
 
-	async function addMap(world: World) {
-		console.log();
+	async function addWorld() {
+		for (let i = 0; i < world.width * world.height; i++) {
+			let x = i % world.width;
+			let y = Math.floor(i / world.width);
+			let cordHeight = world.map[y][x];
+			let borders = {
+				top: false,
+				bot: false,
+				left: false,
+				right: false,
+				lTC: false,
+				rTC: false,
+				lBC: false,
+				rBC: false
+			};
+			if (x - 1 >= 0 && cordHeight != world.map[y][x - 1]) {
+				borders.left = true;
+			}
+			if (x + 1 < world.width && cordHeight != world.map[y][x + 1]) {
+				borders.right = true;
+			}
+			if (y - 1 >= 0 && cordHeight != world.map[y - 1][x]) {
+				borders.top = true;
+			}
+			if (y + 1 < world.height && cordHeight != world.map[y + 1][x]) {
+				borders.bot = true;
+			}
+			if (
+				x - 1 >= 0 &&
+				y - 1 >= 0 &&
+				cordHeight != world.map[y - 1][x - 1] &&
+				world.map[y - 1][x - 1] != world.map[y - 1][x] &&
+				world.map[y - 1][x - 1] != world.map[y][x - 1]
+			) {
+				borders.lTC = true;
+			}
+			if (
+				x + 1 < world.width &&
+				y - 1 >= 0 &&
+				cordHeight != world.map[y - 1][x + 1] &&
+				world.map[y - 1][x + 1] != world.map[y - 1][x] &&
+				world.map[y - 1][x + 1] != world.map[y][x + 1]
+			) {
+				borders.rTC = true;
+			}
+			if (
+				x - 1 >= 0 &&
+				y + 1 < world.height &&
+				cordHeight != world.map[y + 1][x - 1] &&
+				world.map[y + 1][x - 1] != world.map[y + 1][x] &&
+				world.map[y + 1][x - 1] != world.map[y][x - 1]
+			) {
+				borders.lBC = true;
+			}
+			if (
+				x + 1 < world.width &&
+				y + 1 < world.height &&
+				cordHeight != world.map[y + 1][x + 1] &&
+				world.map[y + 1][x + 1] != world.map[y + 1][x] &&
+				world.map[y + 1][x + 1] != world.map[y][x + 1]
+			) {
+				borders.rBC = true;
+			}
+
+			let borderWidth = tileSize / 4;
+			if (borders.left && borders.right && borders.top && borders.bot) {
+				// todo not yet implemented
+				let slope = new Graphics();
+				slope.rect(x * tileSize, y * tileSize, tileSize, tileSize);
+				slope.stroke(0xff0000);
+
+				levelContainer.addChild(slope);
+			} else if ((borders.left || borders.right) && !(borders.top || borders.bot)) {
+				// Left or Right
+				let slope = new Graphics();
+				slope.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize,
+					borderWidth,
+					tileSize
+				);
+				slope.fill(0x000000);
+
+				levelContainer.addChild(slope);
+			} else if (!(borders.left || borders.right) && (borders.top || borders.bot)) {
+				// Top or Bottom
+				let slope = new Graphics();
+				slope.rect(
+					x * tileSize,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize,
+					borderWidth
+				);
+				slope.fill(0x000000);
+
+				levelContainer.addChild(slope);
+			} else if (borders.left && !borders.right && borders.top && !borders.bot) {
+				// Top Left
+				let slopeL = new Graphics();
+				slopeL.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					borderWidth,
+					tileSize / 2 + borderWidth / 2
+				);
+				slopeL.fill(0x000000);
+
+				let slopeT = new Graphics();
+				slopeT.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize / 2 + borderWidth / 2,
+					borderWidth
+				);
+				slopeT.fill(0x000000);
+
+				levelContainer.addChild(slopeT);
+				levelContainer.addChild(slopeL);
+			} else if (!borders.left && borders.right && borders.top && !borders.bot) {
+				// Top Right
+				let slopeR = new Graphics();
+				slopeR.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					borderWidth,
+					tileSize / 2 + borderWidth / 2
+				);
+				slopeR.fill(0x000000);
+
+				let slopeT = new Graphics();
+				slopeT.rect(
+					x * tileSize,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize / 2 + borderWidth / 2,
+					borderWidth
+				);
+				slopeT.fill(0x000000);
+
+				levelContainer.addChild(slopeT);
+				levelContainer.addChild(slopeR);
+			} else if (borders.left && !borders.right && !borders.top && borders.bot) {
+				// Bot Left
+				let slopeL = new Graphics();
+				slopeL.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize,
+					borderWidth,
+					tileSize / 2 + borderWidth / 2
+				);
+				slopeL.fill(0x000000);
+
+				let slopeB = new Graphics();
+				slopeB.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize / 2 + borderWidth / 2,
+					borderWidth
+				);
+				slopeB.fill(0x000000);
+
+				levelContainer.addChild(slopeB);
+				levelContainer.addChild(slopeL);
+			} else if (!borders.left && borders.right && !borders.top && borders.bot) {
+				// Bot Right
+				let slopeR = new Graphics();
+				slopeR.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize,
+					borderWidth,
+					tileSize / 2 + borderWidth / 2
+				);
+				slopeR.fill(0x000000);
+
+				let slopeB = new Graphics();
+				slopeB.rect(
+					x * tileSize,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize / 2 + borderWidth / 2,
+					borderWidth
+				);
+				slopeB.fill(0x000000);
+
+				levelContainer.addChild(slopeB);
+				levelContainer.addChild(slopeR);
+			}
+
+			if (borders.lTC) {
+				// Top Left Corner
+				let slopeL = new Graphics();
+				slopeL.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize,
+					borderWidth,
+					tileSize / 2 + borderWidth / 2
+				);
+				slopeL.fill(0x000000);
+
+				let slopeT = new Graphics();
+				slopeT.rect(
+					x * tileSize - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize / 2 + borderWidth / 2,
+					borderWidth
+				);
+				slopeT.fill(0x000000);
+
+				levelContainer.addChild(slopeT);
+				levelContainer.addChild(slopeL);
+			}
+			if (borders.rTC) {
+				// Top Right Corner
+				let slopeR = new Graphics();
+				slopeR.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize,
+					borderWidth,
+					tileSize / 2 + borderWidth / 2
+				);
+				slopeR.fill(0x000000);
+
+				let slopeT = new Graphics();
+				slopeT.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize / 2 + borderWidth / 2,
+					borderWidth	
+				);
+				slopeT.fill(0x000000);
+
+				levelContainer.addChild(slopeT);
+				levelContainer.addChild(slopeR);
+			}
+			if (borders.lBC) {
+				// Bot Left Corner
+				let slopeL = new Graphics();
+				slopeL.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					borderWidth,
+					tileSize / 2 + borderWidth / 2
+				);
+				slopeL.fill(0x000000);
+
+				let slopeB = new Graphics();
+				slopeB.rect(
+					x * tileSize,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize / 2 + borderWidth / 2,
+					borderWidth
+				);
+				slopeB.fill(0x000000);
+
+				levelContainer.addChild(slopeB);
+				levelContainer.addChild(slopeL);
+			}
+			if (borders.rBC) {
+				// Bot Right Corner
+				let slopeR = new Graphics();
+				slopeR.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					borderWidth,
+					tileSize / 2 + borderWidth / 2
+				);
+				slopeR.fill(0x000000);
+
+				let slopeB = new Graphics();
+				slopeB.rect(
+					x * tileSize + tileSize / 2 - borderWidth / 2,
+					y * tileSize + tileSize / 2 - borderWidth / 2,
+					tileSize / 2 + borderWidth / 2,
+					borderWidth
+				);
+				slopeB.fill(0x000000);
+
+				levelContainer.addChild(slopeB);
+				levelContainer.addChild(slopeR);
+			}
+		}
+	}
+
+	async function initLevelContainer() {
+		levelContainer = new Container();
+		let gameArea = new Graphics();
+
+		levelContainer.x = (elementCanvas.width - tileSize * world.width) / 2;
+		levelContainer.y = 0;
+		gameArea.rect(0, 0, tileSize * world.width, tileSize * world.height);
+		gameArea.fill(0xb4a69d);
+		// levelContainer.mask = gameArea;
+		levelContainer.addChild(gameArea);
+
+		app.stage.addChild(levelContainer);
+	}
+
+	function CalcTileSize(): number {
+		let rectWidth = elementCanvas.width / world.width;
+		let rectHeight = elementCanvas.height / world.height;
+
+		if (rectWidth > rectHeight) return rectHeight;
+		else return rectWidth;
 	}
 
 	async function preoad() {
@@ -74,11 +379,13 @@
 				break;
 		}
 	}
+
+	function handleCanvasClick() {}
 </script>
 
 <div class="flex flex-col w-full h-screen">
 	<div class="" bind:this={container}>
-		<canvas bind:this={elementCanvas}></canvas>
+		<canvas bind:this={elementCanvas} on:click={handleCanvasClick}></canvas>
 	</div>
 	<Hud class="h-20" {handleStructureClick} />
 </div>
