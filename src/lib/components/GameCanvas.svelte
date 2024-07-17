@@ -61,6 +61,30 @@
 			let x = i % world.width;
 			let y = Math.floor(i / world.width);
 			let cordHeight = world.map[y][x];
+			
+			let floor = new Graphics();
+			floor.rect(x * tileSize, y * tileSize, tileSize, tileSize);
+			switch (cordHeight) {
+				case 1:
+					floor.fill(0x756d69);
+					break;
+				case 2:
+					floor.fill(0x958282);
+					break;
+				case 3:
+					floor.fill(0xaba39b);
+					break;
+				case 4:
+					break;
+				case 5:
+					break;
+				case 6:
+					break;
+				default:
+					break;
+			}
+			levelContainer.addChild(floor);
+
 			let borders = {
 				top: false,
 				bot: false,
@@ -255,7 +279,7 @@
 
 				let slopeT = new Graphics();
 				slopeT.rect(
-					x * tileSize - borderWidth / 2,
+					x * tileSize,
 					y * tileSize + tileSize / 2 - borderWidth / 2,
 					tileSize / 2 + borderWidth / 2,
 					borderWidth
@@ -281,7 +305,7 @@
 					x * tileSize + tileSize / 2 - borderWidth / 2,
 					y * tileSize + tileSize / 2 - borderWidth / 2,
 					tileSize / 2 + borderWidth / 2,
-					borderWidth	
+					borderWidth
 				);
 				slopeT.fill(0x000000);
 
@@ -344,7 +368,7 @@
 		levelContainer.x = (elementCanvas.width - tileSize * world.width) / 2;
 		levelContainer.y = 0;
 		gameArea.rect(0, 0, tileSize * world.width, tileSize * world.height);
-		gameArea.fill(0xb4a69d);
+		gameArea.fill(0xc1aba5);
 		// levelContainer.mask = gameArea;
 		levelContainer.addChild(gameArea);
 
