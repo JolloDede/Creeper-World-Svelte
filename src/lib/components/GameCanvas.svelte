@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { Application, Assets, Container, Graphics, Loader, Sprite, Text } from 'pixi.js';
+	import {
+		Application,
+		Assets,
+		Container,
+		FederatedPointerEvent,
+		Graphics,
+		Loader,
+		Sprite,
+		Text
+	} from 'pixi.js';
 	import { onDestroy, onMount } from 'svelte';
 	import Hud from './Hud.svelte';
 	import { Structure, World } from '$lib/game/World';
@@ -8,6 +17,7 @@
 	let container: HTMLDivElement;
 	let elementCanvas: HTMLCanvasElement;
 	const loading = { amount: Number, complete: Boolean };
+	let pointerPosHeight: number = 0;
 
 	let app: Application;
 	let levelContainer: Container;
@@ -61,7 +71,7 @@
 			let x = i % world.width;
 			let y = Math.floor(i / world.width);
 			let cordHeight = world.map[y][x];
-			
+
 			let floor = new Graphics();
 			floor.rect(x * tileSize, y * tileSize, tileSize, tileSize);
 			switch (cordHeight) {
@@ -361,6 +371,10 @@
 		}
 	}
 
+	function handlePointerMove(e: FederatedPointerEvent) {
+		pointerPosHeight = world.map[Math.floor(e.globalY / tileSize)][Math.floor((e.globalX - levelContainer.x) / tileSize)];
+	}
+
 	async function initLevelContainer() {
 		levelContainer = new Container();
 		let gameArea = new Graphics();
@@ -369,7 +383,10 @@
 		levelContainer.y = 0;
 		gameArea.rect(0, 0, tileSize * world.width, tileSize * world.height);
 		gameArea.fill(0xc1aba5);
-		// levelContainer.mask = gameArea;
+
+		gameArea.eventMode = 'static';
+		gameArea.on('pointermove', handlePointerMove);
+
 		levelContainer.addChild(gameArea);
 
 		app.stage.addChild(levelContainer);
@@ -405,11 +422,13 @@
 	}
 
 	function handleCanvasClick() {}
+
+	// $: console.log(pointerPosHeight)
 </script>
 
 <div class="flex flex-col w-full h-screen">
 	<div class="" bind:this={container}>
 		<canvas bind:this={elementCanvas} on:click={handleCanvasClick}></canvas>
 	</div>
-	<Hud class="h-20" {handleStructureClick} />
+	<Hud class="h-20" {handleStructureClick} bind:posHeight={pointerPosHeight} />
 </div>
