@@ -1,12 +1,12 @@
-import type { Point } from "pixi.js";
+import type { Position } from "./Pos";
 
 export class GameObject {
     private name: string;
-    public coordinates: Point;
+    public coordinates: Position;
     public width: number;
     public height: number;
 
-    constructor(name: string, cord: Point, width: number, height: number) {
+    constructor(name: string, cord: Position, width: number, height: number) {
         this.name = name;
         this.coordinates = cord;
         this.width = width;

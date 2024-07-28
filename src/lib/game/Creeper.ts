@@ -1,9 +1,9 @@
-import type { Point } from "pixi.js";
 import { GameObject } from "./GameObject";
+import type { Position } from "./Pos";
 
 export class Creeper extends GameObject {
 
-    constructor(cord: Point) {
-        super("creeper", cord, 2, 2);
+    constructor(cord: Position) {
+        super("creeper", cord, 1, 1);
     }
 }

@@ -1,25 +1,30 @@
 # Creeper World
-## Loading Screen
+## V1
+### Loading Screen
 - [ ] Loading bar
 
-## Start Screen
+### Start Screen
 - [ ] Start Button
 
-## InGame
+### InGame
 - [ ] Hud
   - [X] design
   - [ ] logic
     - [X] Elevation draw on mouse move
 - [ ] Mission draw
-  - [ ] terrain **(Doing)**
+  - [ ] terrain
     - [X] Slopes
     - [ ] heights (coloring)
-      - [ ] paint the border right
       - [X] painting
   - [ ] creepers
+    - [X] draw **(Doing)**
   - [X] Collectors
 - [ ] dragging and placing structures
   - [ ] collector
 
-## Summary
+### Summary
 - [ ] graph for how the game went
+
+## V2
+### InGame
+- [ ] paint the border right

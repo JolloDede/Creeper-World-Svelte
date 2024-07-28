@@ -21,6 +21,7 @@
 
 	let app: Application;
 	let levelContainer: Container;
+	let mapContainer: Container;
 	let tileSize: number;
 	let draggingStructure: Sprite;
 	let world: World;
@@ -39,8 +40,8 @@
 		world = new World();
 		tileSize = CalcTileSize();
 		await initLevelContainer();
-		await addWorld();
-
+		await paintWorld();
+		await paintCreepers();
 		// await addStructures(world);
 
 		// app.stage.hitArea = app.screen;
@@ -62,11 +63,11 @@
 			sprite.width = (app.screen.width / world.width) * struct.width;
 			sprite.height = (app.screen.height / world.height) * struct.height;
 
-			app.stage.addChild(sprite);
+			levelContainer.addChild(sprite);
 		});
 	}
 
-	async function addWorld() {
+	async function paintWorld() {
 		for (let i = 0; i < world.width * world.height; i++) {
 			let x = i % world.width;
 			let y = Math.floor(i / world.width);
@@ -93,7 +94,7 @@
 				default:
 					break;
 			}
-			levelContainer.addChild(floor);
+			mapContainer.addChild(floor);
 
 			let borders = {
 				top: false,
@@ -161,7 +162,7 @@
 				slope.rect(x * tileSize, y * tileSize, tileSize, tileSize);
 				slope.stroke(0xff0000);
 
-				levelContainer.addChild(slope);
+				mapContainer.addChild(slope);
 			} else if ((borders.left || borders.right) && !(borders.top || borders.bot)) {
 				// Left or Right
 				let slope = new Graphics();
@@ -173,7 +174,7 @@
 				);
 				slope.fill(0x000000);
 
-				levelContainer.addChild(slope);
+				mapContainer.addChild(slope);
 			} else if (!(borders.left || borders.right) && (borders.top || borders.bot)) {
 				// Top or Bottom
 				let slope = new Graphics();
@@ -185,7 +186,7 @@
 				);
 				slope.fill(0x000000);
 
-				levelContainer.addChild(slope);
+				mapContainer.addChild(slope);
 			} else if (borders.left && !borders.right && borders.top && !borders.bot) {
 				// Top Left
 				let slopeL = new Graphics();
@@ -206,8 +207,8 @@
 				);
 				slopeT.fill(0x000000);
 
-				levelContainer.addChild(slopeT);
-				levelContainer.addChild(slopeL);
+				mapContainer.addChild(slopeT);
+				mapContainer.addChild(slopeL);
 			} else if (!borders.left && borders.right && borders.top && !borders.bot) {
 				// Top Right
 				let slopeR = new Graphics();
@@ -228,8 +229,8 @@
 				);
 				slopeT.fill(0x000000);
 
-				levelContainer.addChild(slopeT);
-				levelContainer.addChild(slopeR);
+				mapContainer.addChild(slopeT);
+				mapContainer.addChild(slopeR);
 			} else if (borders.left && !borders.right && !borders.top && borders.bot) {
 				// Bot Left
 				let slopeL = new Graphics();
@@ -250,8 +251,8 @@
 				);
 				slopeB.fill(0x000000);
 
-				levelContainer.addChild(slopeB);
-				levelContainer.addChild(slopeL);
+				mapContainer.addChild(slopeB);
+				mapContainer.addChild(slopeL);
 			} else if (!borders.left && borders.right && !borders.top && borders.bot) {
 				// Bot Right
 				let slopeR = new Graphics();
@@ -272,8 +273,8 @@
 				);
 				slopeB.fill(0x000000);
 
-				levelContainer.addChild(slopeB);
-				levelContainer.addChild(slopeR);
+				mapContainer.addChild(slopeB);
+				mapContainer.addChild(slopeR);
 			}
 
 			if (borders.lTC) {
@@ -296,8 +297,8 @@
 				);
 				slopeT.fill(0x000000);
 
-				levelContainer.addChild(slopeT);
-				levelContainer.addChild(slopeL);
+				mapContainer.addChild(slopeT);
+				mapContainer.addChild(slopeL);
 			}
 			if (borders.rTC) {
 				// Top Right Corner
@@ -319,8 +320,8 @@
 				);
 				slopeT.fill(0x000000);
 
-				levelContainer.addChild(slopeT);
-				levelContainer.addChild(slopeR);
+				mapContainer.addChild(slopeT);
+				mapContainer.addChild(slopeR);
 			}
 			if (borders.lBC) {
 				// Bot Left Corner
@@ -342,8 +343,8 @@
 				);
 				slopeB.fill(0x000000);
 
-				levelContainer.addChild(slopeB);
-				levelContainer.addChild(slopeL);
+				mapContainer.addChild(slopeB);
+				mapContainer.addChild(slopeL);
 			}
 			if (borders.rBC) {
 				// Bot Right Corner
@@ -365,18 +366,46 @@
 				);
 				slopeB.fill(0x000000);
 
-				levelContainer.addChild(slopeB);
-				levelContainer.addChild(slopeR);
+				mapContainer.addChild(slopeB);
+				mapContainer.addChild(slopeR);
 			}
 		}
 	}
 
+	async function paintCreepers() {
+		world.creepers.forEach((creep) => {
+			const sprite = Sprite.from(creep.getName());
+
+			sprite.x = creep.coordinates.x * tileSize;
+			sprite.y = creep.coordinates.y * tileSize;
+			sprite.width = tileSize * creep.width;
+			sprite.height = tileSize * creep.height;
+
+			// testing
+			const rect = new Graphics();
+			rect.rect(
+				creep.coordinates.x * tileSize,
+				creep.coordinates.y * tileSize,
+				tileSize * creep.width,
+				tileSize * creep.height
+			);
+			rect.stroke(0xff0000);
+			mapContainer.addChild(rect);
+
+			mapContainer.addChild(sprite);
+		});
+	}
+
 	function handlePointerMove(e: FederatedPointerEvent) {
-		pointerPosHeight = world.map[Math.floor(e.globalY / tileSize)][Math.floor((e.globalX - levelContainer.x) / tileSize)];
+		pointerPosHeight =
+			world.map[Math.floor(e.globalY / tileSize)][
+				Math.floor((e.globalX - levelContainer.x) / tileSize)
+			];
 	}
 
 	async function initLevelContainer() {
 		levelContainer = new Container();
+		mapContainer = new Container();
 		let gameArea = new Graphics();
 
 		levelContainer.x = (elementCanvas.width - tileSize * world.width) / 2;
@@ -388,6 +417,7 @@
 		gameArea.on('pointermove', handlePointerMove);
 
 		levelContainer.addChild(gameArea);
+		levelContainer.addChild(mapContainer);
 
 		app.stage.addChild(levelContainer);
 	}
@@ -401,7 +431,10 @@
 	}
 
 	async function preoad() {
-		const assets = [{ alias: 'collector', src: 'collector.png' }];
+		const assets = [
+			{ alias: 'collector', src: 'collector.png' },
+			{ alias: 'creeper', src: 'creeper.png' }
+		];
 
 		await Assets.load(assets);
 	}
