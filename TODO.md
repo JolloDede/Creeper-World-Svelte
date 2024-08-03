@@ -17,8 +17,14 @@
     - [ ] heights (coloring)
       - [X] painting
   - [ ] creepers
-    - [X] draw **(Doing)**
-  - [X] Collectors
+    - [X] draw
+    - [ ] Logic
+  - [ ] Collectors
+    - [X] Draw **Doing**
+    - [ ] Logic
+  - [ ] Headquarters
+    - [X] draw
+    - [ ] logic
 - [ ] dragging and placing structures
   - [ ] collector
 

@@ -42,7 +42,7 @@
 		await initLevelContainer();
 		await paintWorld();
 		await paintCreepers();
-		// await addStructures(world);
+		await paintStructures();
 
 		// app.stage.hitArea = app.screen;
 		// app.stage.eventMode = 'static';
@@ -55,13 +55,23 @@
 		// app.stage.addChild(mapContainer);
 	});
 
-	async function addStructures(world: World) {
+	async function paintStructures() {
 		world.structures.forEach((struct) => {
 			const sprite = Sprite.from(struct.getName());
-			sprite.x = struct.coordinates.x;
-			sprite.y = struct.coordinates.y;
-			sprite.width = (app.screen.width / world.width) * struct.width;
-			sprite.height = (app.screen.height / world.height) * struct.height;
+			sprite.x = struct.coordinates.x * tileSize;
+			sprite.y = struct.coordinates.y * tileSize;
+			sprite.width = tileSize * struct.width;
+			sprite.height = tileSize * struct.height;
+
+			let grap = new Graphics();
+			grap.rect(
+				struct.coordinates.x * tileSize,
+				struct.coordinates.y * tileSize,
+				tileSize * struct.width,
+				tileSize * struct.height
+			);
+			grap.stroke(0xff0000);
+			levelContainer.addChild(grap);
 
 			levelContainer.addChild(sprite);
 		});
@@ -381,17 +391,6 @@
 			sprite.width = tileSize * creep.width;
 			sprite.height = tileSize * creep.height;
 
-			// testing
-			const rect = new Graphics();
-			rect.rect(
-				creep.coordinates.x * tileSize,
-				creep.coordinates.y * tileSize,
-				tileSize * creep.width,
-				tileSize * creep.height
-			);
-			rect.stroke(0xff0000);
-			mapContainer.addChild(rect);
-
 			mapContainer.addChild(sprite);
 		});
 	}
@@ -433,7 +432,8 @@
 	async function preoad() {
 		const assets = [
 			{ alias: 'collector', src: 'collector.png' },
-			{ alias: 'creeper', src: 'creeper.png' }
+			{ alias: 'creeper', src: 'creeper.png' },
+			{ alias: 'base', src: 'base.png' }
 		];
 
 		await Assets.load(assets);
