@@ -5,6 +5,7 @@ import type { GameObject } from "./GameObject";
 import { loadTerrain } from "./Map";
 import { Position } from "./Pos";
 import { HeadQuarters } from "./HeadQuarters";
+import { Blaster } from "./Blaster";
 
 export enum Structure {
     Collector,
@@ -32,10 +33,13 @@ export class World {
 
     private initStructures(): GameObject[] {
         let structures: GameObject[] = [];
-        let struct = new Collector(new Position(38, 37));
-        structures.push(struct);
-        struct = new Collector(new Position(42, 35));
-        structures.push(struct);
+        let collector = new Collector(new Position(38, 37));
+        structures.push(collector);
+        collector = new Collector(new Position(42, 35));
+        structures.push(collector);
+
+        let blaster = new Blaster(new Position(38, 33));
+        structures.push(blaster);
         return structures;
     }
 

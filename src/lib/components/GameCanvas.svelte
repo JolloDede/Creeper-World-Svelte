@@ -13,6 +13,7 @@
 	import Hud from './Hud.svelte';
 	import { Structure, World } from '$lib/game/World';
 	import { text } from '@sveltejs/kit';
+	import { Blaster } from '$lib/game/Blaster';
 
 	let container: HTMLDivElement;
 	let elementCanvas: HTMLCanvasElement;
@@ -74,6 +75,20 @@
 			levelContainer.addChild(grap);
 
 			levelContainer.addChild(sprite);
+			if (struct.getName() === 'blaster') {
+				let cannon = new Graphics();
+				cannon.moveTo(
+					struct.coordinates.x * tileSize + (struct.width * tileSize) / 2,
+					struct.coordinates.y * tileSize + (struct.height * tileSize) / 2
+				);
+				cannon.lineTo(
+					struct.coordinates.x * tileSize,
+					struct.coordinates.y * tileSize + (struct.height * tileSize) / 2
+				);
+				cannon.stroke({ width: 6, color: 0x000000 });
+
+				levelContainer.addChild(cannon);
+			}
 		});
 	}
 
@@ -432,6 +447,7 @@
 	async function preoad() {
 		const assets = [
 			{ alias: 'collector', src: 'collector.png' },
+			{ alias: 'blaster', src: 'blaster.png' },
 			{ alias: 'creeper', src: 'creeper.png' },
 			{ alias: 'base', src: 'base.png' }
 		];

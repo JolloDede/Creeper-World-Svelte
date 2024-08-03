@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Structure } from "$lib/game/World";
-	import Elevation from "./Elevation.svelte";
+	import { Structure } from '$lib/game/World';
+	import Elevation from './Elevation.svelte';
 
 	export let posHeight: number;
 	export let handleStructureClick: (struct: Structure) => void;
@@ -15,12 +15,15 @@
 	<!-- Buildings -->
 	<div class="w-1/2">
 		<div class="grid grid-cols-5">
-			<button class="flex p-1 bg-green-600" on:click={() => handleStructureClick(Structure.Collector)}
+			<button
+				class="flex p-1 bg-green-600"
+				on:click={() => handleStructureClick(Structure.Collector)}
 				><img src="collector.png" alt="Collector" class="my-auto w-4 h-4" />Collector</button
 			>
 		</div>
 		<div class="grid grid-cols-5">
-			<button class="p-1 bg-red-600">Blaster</button>
+			<button class="flex p-1 bg-red-600">
+				<img src="blaster.png" alt="Blaster" class="my-auto w-4 h-4">Blaster</button>
 		</div>
 	</div>
 	<div class="flex justify-end w-full">

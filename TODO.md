@@ -20,8 +20,12 @@
     - [X] draw
     - [ ] Logic
   - [ ] Collectors
+    - [X] Draw 
+    - [ ] Logic
+  - [ ] Blaster
     - [X] Draw **Doing**
     - [ ] Logic
+    - [ ] Draw the Cannon
   - [ ] Headquarters
     - [X] draw
     - [ ] logic
