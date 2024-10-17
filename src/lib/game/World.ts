@@ -1,11 +1,11 @@
-import { Point } from "pixi.js";
-import { Collector } from "./Collector";
-import { Creeper } from "./Creeper";
-import type { GameObject } from "./GameObject";
+import { Container, Point } from "pixi.js";
+import { Collector } from "./structures/Collector";
+import { Creeper } from "./structures/Creeper";
+import type { GameObject } from "./structures/GameObject";
 import { loadTerrain } from "./Map";
 import { Position } from "./Pos";
-import { HeadQuarters } from "./HeadQuarters";
-import { Blaster } from "./Blaster";
+import { HeadQuarters } from "./structures/HeadQuarters";
+import { Blaster } from "./structures/Blaster";
 
 export enum Structure {
     Collector,
@@ -20,6 +20,8 @@ export class World {
     public headQuarters: HeadQuarters;
     public map: number[][];
 
+    view: Container;
+
     constructor() {
         this.creepers = [];
         this.map = loadTerrain();
@@ -29,6 +31,8 @@ export class World {
         this.initCreepers();
         this.headQuarters = new HeadQuarters(new Position(40, 37));
         this.structures.push(this.headQuarters);
+
+        this.view = new Container();
     }
 
     private initStructures(): GameObject[] {

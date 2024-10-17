@@ -11,456 +11,41 @@
 	} from 'pixi.js';
 	import { onDestroy, onMount } from 'svelte';
 	import Hud from './Hud.svelte';
-	import { Structure, World } from '$lib/game/World';
+	import { Structure} from '$lib/game/World';
 	import { text } from '@sveltejs/kit';
-	import { Blaster } from '$lib/game/Blaster';
+	import { Blaster } from '$lib/game/structures/Blaster';
+	import { DrawMain } from '$lib/game/draw/DrawMain';
+	import { Game } from '$lib/game/Game';
+	import { draw } from 'svelte/transition';
+	import { AppSingle } from '$lib/game/App';
 
 	let container: HTMLDivElement;
 	let elementCanvas: HTMLCanvasElement;
 	const loading = { amount: Number, complete: Boolean };
 	let pointerPosHeight: number = 0;
 
-	let app: Application;
 	let levelContainer: Container;
 	let mapContainer: Container;
 	let tileSize: number;
 	let draggingStructure: Sprite;
-	let world: World;
+	let game: Game;
 
 	onMount(async () => {
-		app = new Application();
-		await app.init({
-			canvas: elementCanvas,
-			resizeTo: container,
-			// backgroundColor: '#b4a69d'
-			backgroundColor: 'black'
-		});
-		await preoad();
-
-		// create the world
-		world = new World();
-		tileSize = CalcTileSize();
-		await initLevelContainer();
-		await paintWorld();
-		await paintCreepers();
-		await paintStructures();
-
-		// app.stage.hitArea = app.screen;
-		// app.stage.eventMode = 'static';
-		// app.stage.on('pointermove', (event) => {
-		// 	if (draggingStructure) draggingStructure.position.copyFrom(event.global);
-		// });
-
-		// let mapContainer = new Container();
-
-		// app.stage.addChild(mapContainer);
+		const app = AppSingle.instance;
+		await app.initApp(elementCanvas, container);
+		game = new Game();
+		app.app.stage.addChild(game.view);
+		// game = new Game();
+		// let draw = new DrawMain(app, game);
+		// await draw.setup();
+		// draw.draw();
 	});
-
-	async function paintStructures() {
-		world.structures.forEach((struct) => {
-			const sprite = Sprite.from(struct.getName());
-			sprite.x = struct.coordinates.x * tileSize;
-			sprite.y = struct.coordinates.y * tileSize;
-			sprite.width = tileSize * struct.width;
-			sprite.height = tileSize * struct.height;
-
-			let grap = new Graphics();
-			grap.rect(
-				struct.coordinates.x * tileSize,
-				struct.coordinates.y * tileSize,
-				tileSize * struct.width,
-				tileSize * struct.height
-			);
-			grap.stroke(0xff0000);
-			levelContainer.addChild(grap);
-
-			levelContainer.addChild(sprite);
-			if (struct.getName() === 'blaster') {
-				let cannon = new Graphics();
-				cannon.moveTo(
-					struct.coordinates.x * tileSize + (struct.width * tileSize) / 2,
-					struct.coordinates.y * tileSize + (struct.height * tileSize) / 2
-				);
-				cannon.lineTo(
-					struct.coordinates.x * tileSize,
-					struct.coordinates.y * tileSize + (struct.height * tileSize) / 2
-				);
-				cannon.stroke({ width: 6, color: 0x000000 });
-
-				levelContainer.addChild(cannon);
-			}
-		});
-	}
-
-	async function paintWorld() {
-		for (let i = 0; i < world.width * world.height; i++) {
-			let x = i % world.width;
-			let y = Math.floor(i / world.width);
-			let cordHeight = world.map[y][x];
-
-			let floor = new Graphics();
-			floor.rect(x * tileSize, y * tileSize, tileSize, tileSize);
-			switch (cordHeight) {
-				case 1:
-					floor.fill(0x756d69);
-					break;
-				case 2:
-					floor.fill(0x958282);
-					break;
-				case 3:
-					floor.fill(0xaba39b);
-					break;
-				case 4:
-					break;
-				case 5:
-					break;
-				case 6:
-					break;
-				default:
-					break;
-			}
-			mapContainer.addChild(floor);
-
-			let borders = {
-				top: false,
-				bot: false,
-				left: false,
-				right: false,
-				lTC: false,
-				rTC: false,
-				lBC: false,
-				rBC: false
-			};
-			if (x - 1 >= 0 && cordHeight != world.map[y][x - 1]) {
-				borders.left = true;
-			}
-			if (x + 1 < world.width && cordHeight != world.map[y][x + 1]) {
-				borders.right = true;
-			}
-			if (y - 1 >= 0 && cordHeight != world.map[y - 1][x]) {
-				borders.top = true;
-			}
-			if (y + 1 < world.height && cordHeight != world.map[y + 1][x]) {
-				borders.bot = true;
-			}
-			if (
-				x - 1 >= 0 &&
-				y - 1 >= 0 &&
-				cordHeight != world.map[y - 1][x - 1] &&
-				world.map[y - 1][x - 1] != world.map[y - 1][x] &&
-				world.map[y - 1][x - 1] != world.map[y][x - 1]
-			) {
-				borders.lTC = true;
-			}
-			if (
-				x + 1 < world.width &&
-				y - 1 >= 0 &&
-				cordHeight != world.map[y - 1][x + 1] &&
-				world.map[y - 1][x + 1] != world.map[y - 1][x] &&
-				world.map[y - 1][x + 1] != world.map[y][x + 1]
-			) {
-				borders.rTC = true;
-			}
-			if (
-				x - 1 >= 0 &&
-				y + 1 < world.height &&
-				cordHeight != world.map[y + 1][x - 1] &&
-				world.map[y + 1][x - 1] != world.map[y + 1][x] &&
-				world.map[y + 1][x - 1] != world.map[y][x - 1]
-			) {
-				borders.lBC = true;
-			}
-			if (
-				x + 1 < world.width &&
-				y + 1 < world.height &&
-				cordHeight != world.map[y + 1][x + 1] &&
-				world.map[y + 1][x + 1] != world.map[y + 1][x] &&
-				world.map[y + 1][x + 1] != world.map[y][x + 1]
-			) {
-				borders.rBC = true;
-			}
-
-			let borderWidth = tileSize / 4;
-			if (borders.left && borders.right && borders.top && borders.bot) {
-				// todo not yet implemented
-				let slope = new Graphics();
-				slope.rect(x * tileSize, y * tileSize, tileSize, tileSize);
-				slope.stroke(0xff0000);
-
-				mapContainer.addChild(slope);
-			} else if ((borders.left || borders.right) && !(borders.top || borders.bot)) {
-				// Left or Right
-				let slope = new Graphics();
-				slope.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize,
-					borderWidth,
-					tileSize
-				);
-				slope.fill(0x000000);
-
-				mapContainer.addChild(slope);
-			} else if (!(borders.left || borders.right) && (borders.top || borders.bot)) {
-				// Top or Bottom
-				let slope = new Graphics();
-				slope.rect(
-					x * tileSize,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize,
-					borderWidth
-				);
-				slope.fill(0x000000);
-
-				mapContainer.addChild(slope);
-			} else if (borders.left && !borders.right && borders.top && !borders.bot) {
-				// Top Left
-				let slopeL = new Graphics();
-				slopeL.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					borderWidth,
-					tileSize / 2 + borderWidth / 2
-				);
-				slopeL.fill(0x000000);
-
-				let slopeT = new Graphics();
-				slopeT.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize / 2 + borderWidth / 2,
-					borderWidth
-				);
-				slopeT.fill(0x000000);
-
-				mapContainer.addChild(slopeT);
-				mapContainer.addChild(slopeL);
-			} else if (!borders.left && borders.right && borders.top && !borders.bot) {
-				// Top Right
-				let slopeR = new Graphics();
-				slopeR.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					borderWidth,
-					tileSize / 2 + borderWidth / 2
-				);
-				slopeR.fill(0x000000);
-
-				let slopeT = new Graphics();
-				slopeT.rect(
-					x * tileSize,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize / 2 + borderWidth / 2,
-					borderWidth
-				);
-				slopeT.fill(0x000000);
-
-				mapContainer.addChild(slopeT);
-				mapContainer.addChild(slopeR);
-			} else if (borders.left && !borders.right && !borders.top && borders.bot) {
-				// Bot Left
-				let slopeL = new Graphics();
-				slopeL.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize,
-					borderWidth,
-					tileSize / 2 + borderWidth / 2
-				);
-				slopeL.fill(0x000000);
-
-				let slopeB = new Graphics();
-				slopeB.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize / 2 + borderWidth / 2,
-					borderWidth
-				);
-				slopeB.fill(0x000000);
-
-				mapContainer.addChild(slopeB);
-				mapContainer.addChild(slopeL);
-			} else if (!borders.left && borders.right && !borders.top && borders.bot) {
-				// Bot Right
-				let slopeR = new Graphics();
-				slopeR.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize,
-					borderWidth,
-					tileSize / 2 + borderWidth / 2
-				);
-				slopeR.fill(0x000000);
-
-				let slopeB = new Graphics();
-				slopeB.rect(
-					x * tileSize,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize / 2 + borderWidth / 2,
-					borderWidth
-				);
-				slopeB.fill(0x000000);
-
-				mapContainer.addChild(slopeB);
-				mapContainer.addChild(slopeR);
-			}
-
-			if (borders.lTC) {
-				// Top Left Corner
-				let slopeL = new Graphics();
-				slopeL.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize,
-					borderWidth,
-					tileSize / 2 + borderWidth / 2
-				);
-				slopeL.fill(0x000000);
-
-				let slopeT = new Graphics();
-				slopeT.rect(
-					x * tileSize,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize / 2 + borderWidth / 2,
-					borderWidth
-				);
-				slopeT.fill(0x000000);
-
-				mapContainer.addChild(slopeT);
-				mapContainer.addChild(slopeL);
-			}
-			if (borders.rTC) {
-				// Top Right Corner
-				let slopeR = new Graphics();
-				slopeR.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize,
-					borderWidth,
-					tileSize / 2 + borderWidth / 2
-				);
-				slopeR.fill(0x000000);
-
-				let slopeT = new Graphics();
-				slopeT.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize / 2 + borderWidth / 2,
-					borderWidth
-				);
-				slopeT.fill(0x000000);
-
-				mapContainer.addChild(slopeT);
-				mapContainer.addChild(slopeR);
-			}
-			if (borders.lBC) {
-				// Bot Left Corner
-				let slopeL = new Graphics();
-				slopeL.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					borderWidth,
-					tileSize / 2 + borderWidth / 2
-				);
-				slopeL.fill(0x000000);
-
-				let slopeB = new Graphics();
-				slopeB.rect(
-					x * tileSize,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize / 2 + borderWidth / 2,
-					borderWidth
-				);
-				slopeB.fill(0x000000);
-
-				mapContainer.addChild(slopeB);
-				mapContainer.addChild(slopeL);
-			}
-			if (borders.rBC) {
-				// Bot Right Corner
-				let slopeR = new Graphics();
-				slopeR.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					borderWidth,
-					tileSize / 2 + borderWidth / 2
-				);
-				slopeR.fill(0x000000);
-
-				let slopeB = new Graphics();
-				slopeB.rect(
-					x * tileSize + tileSize / 2 - borderWidth / 2,
-					y * tileSize + tileSize / 2 - borderWidth / 2,
-					tileSize / 2 + borderWidth / 2,
-					borderWidth
-				);
-				slopeB.fill(0x000000);
-
-				mapContainer.addChild(slopeB);
-				mapContainer.addChild(slopeR);
-			}
-		}
-	}
-
-	async function paintCreepers() {
-		world.creepers.forEach((creep) => {
-			const sprite = Sprite.from(creep.getName());
-
-			sprite.x = creep.coordinates.x * tileSize;
-			sprite.y = creep.coordinates.y * tileSize;
-			sprite.width = tileSize * creep.width;
-			sprite.height = tileSize * creep.height;
-
-			mapContainer.addChild(sprite);
-		});
-	}
-
-	function handlePointerMove(e: FederatedPointerEvent) {
-		pointerPosHeight =
-			world.map[Math.floor(e.globalY / tileSize)][
-				Math.floor((e.globalX - levelContainer.x) / tileSize)
-			];
-	}
-
-	async function initLevelContainer() {
-		levelContainer = new Container();
-		mapContainer = new Container();
-		let gameArea = new Graphics();
-
-		levelContainer.x = (elementCanvas.width - tileSize * world.width) / 2;
-		levelContainer.y = 0;
-		gameArea.rect(0, 0, tileSize * world.width, tileSize * world.height);
-		gameArea.fill(0xc1aba5);
-
-		gameArea.eventMode = 'static';
-		gameArea.on('pointermove', handlePointerMove);
-
-		levelContainer.addChild(gameArea);
-		levelContainer.addChild(mapContainer);
-
-		app.stage.addChild(levelContainer);
-	}
-
-	function CalcTileSize(): number {
-		let rectWidth = elementCanvas.width / world.width;
-		let rectHeight = elementCanvas.height / world.height;
-
-		if (rectWidth > rectHeight) return rectHeight;
-		else return rectWidth;
-	}
-
-	async function preoad() {
-		const assets = [
-			{ alias: 'collector', src: 'collector.png' },
-			{ alias: 'blaster', src: 'blaster.png' },
-			{ alias: 'creeper', src: 'creeper.png' },
-			{ alias: 'base', src: 'base.png' }
-		];
-
-		await Assets.load(assets);
-	}
 
 	function handleStructureClick(struct: Structure) {
 		console.log('Hallo');
 		switch (struct) {
 			case Structure.Collector:
-				draggingStructure = Sprite.from('collector');
-				app.stage.addChild(draggingStructure);
+				game.carriedStructure = struct;
 				break;
 			case Structure.Blaster:
 				break;
@@ -477,7 +62,7 @@
 
 <div class="flex flex-col w-full h-screen">
 	<div class="" bind:this={container}>
-		<canvas bind:this={elementCanvas} on:click={handleCanvasClick}></canvas>
+		<canvas class="m-auto" bind:this={elementCanvas}></canvas>
 	</div>
 	<Hud class="h-20" {handleStructureClick} bind:posHeight={pointerPosHeight} />
 </div>
