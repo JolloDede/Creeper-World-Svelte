@@ -5,6 +5,10 @@ let assetsManifest: AssetsManifest = {
     bundles: [
         {
             name: "preload",
+            assets: []
+        },
+        {
+            name: "default",
             assets: [
                 {
                     alias: "button-large",
@@ -19,6 +23,10 @@ let assetsManifest: AssetsManifest = {
                     src: "Buttons/button-large-press.png"
                 }
             ]
+        },
+        {
+            name: 'game',
+            assets: []
         }
     ]
 };

@@ -2,6 +2,8 @@ import * as PIXI from 'pixi.js';
 import { navigation } from './utils/navigation';
 import { HomeScreen } from './screens/HomeScreen';
 import { initAssets } from './utils/assets';
+import { ResultsScreen } from './screens/ResultsScreen';
+import { LoadingScreen } from './screens/LoadingScreen';
 
 export const app = new PIXI.Application();
 
@@ -62,10 +64,7 @@ async function init() {
     // navigation.setBackground(TiledBackground);
 
     // Show initial loading screen
-    // await navigation.showScreen(LoadScreen);
-
-    // Todo remove testing only
-    await navigation.showScreen(HomeScreen);
+    await navigation.showScreen(LoadingScreen);
 
     // Go to one of the screens if a shortcut is present in url params, otherwise go to home screen
     // if (getUrlParam('game') !== null) {
@@ -77,6 +76,7 @@ async function init() {
     // } else {
     //     await navigation.showScreen(HomeScreen);
     // }
+    await navigation.showScreen(HomeScreen);
 }
 
 init();
