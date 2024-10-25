@@ -1,4 +1,4 @@
-import { Assets, AssetsManifest } from 'pixi.js';
+import { Assets, AssetsManifest, Loader } from 'pixi.js';
 
 /** List of assets grouped in bundles, for dynamic loading */
 let assetsManifest: AssetsManifest = {
@@ -34,6 +34,8 @@ let assetsManifest: AssetsManifest = {
 /** Store bundles already loaded */
 const loadedBundles: string[] = [];
 
+export let resourceProgress = 0;
+
 /** Check if a bundle exists in assetManifest  */
 function checkBundleExists(bundle: string) {
     return !!assetsManifest.bundles.find((b) => b.name === bundle);
@@ -58,7 +60,7 @@ export async function loadBundles(bundles: string | string[]) {
 
     // Load bundles
     console.log('[Assets] Load:', loadList.join(', '));
-    await Assets.loadBundle(loadList);
+    await Assets.loadBundle(loadList, LoaderOnProgress);
 
     // Append loaded bundles to the loaded list
     loadedBundles.push(...loadList);
@@ -90,4 +92,8 @@ export async function initAssets() {
 
     // Start up background loading of all bundles
     Assets.backgroundLoadBundle(allBundles);
+}
+
+function LoaderOnProgress(progress: number) {
+    resourceProgress = progress;
 }

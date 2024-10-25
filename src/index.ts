@@ -76,7 +76,7 @@ async function init() {
     // } else {
     //     await navigation.showScreen(HomeScreen);
     // }
-    await navigation.showScreen(HomeScreen);
+    // await navigation.showScreen(HomeScreen);
 }
 
 init();
